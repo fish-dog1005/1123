@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電子相框</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 800px;
+            width: 95%;
+        }
+
+        .frame {
+            position: relative;
+            width: 100%;
+            padding-top: 75%; /* 4:3 比例 */
+            margin-bottom: 20px;
+            background-color: #000;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .frame img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            background-color: #2196F3;
+        }
+
+        .upload-btn:hover {
+            background-color: #1976D2;
+        }
+
+        .interval-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .thumbnail-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .thumbnail {
+            position: relative;
+            padding-top: 75%;
+            background-color: #f8f8f8;
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .thumbnail img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .controls {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+
+            button {
+                padding: 8px;
+                font-size: 12px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .controls {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            }
+
+            button {
+                padding: 6px;
+                font-size: 11px;
+            }
+
+            .thumbnail-container {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="frame">
+            <img id="currentImage" src="default.jpg" alt="相框圖片">
+        </div>
+        
+        <div class="controls">
+            <input type="file" id="imageUpload" accept="image/*" multiple>
+            <button class="upload-btn" onclick="document.getElementById('imageUpload').click()">上傳圖片</button>
+            <button id="playPause">播放/暫停</button>
+            <button id="prev">上一張</button>
+            <button id="next">下一張</button>
+            <div class="interval-control">
+                <label for="interval">間隔(秒):</label>
+                <input type="number" id="interval" min="1" value="3">
+            </div>
+        </div>
+
+        <div class="thumbnail-container" id="thumbnails">
+            <!-- 縮圖將在這裡動態添加 -->
+        </div>
+    </div>
+
+    <script>
+        let images = [];
+        let currentIndex = 0;
+        let isPlaying = false;
+        let slideInterval;
+
+        const imageUpload = document.getElementById('imageUpload');
+        const currentImage = document.getElementById('currentImage');
+        const thumbnailContainer = document.getElementById('thumbnails');
+        const intervalInput = document.getElementById('interval');
+
+        imageUpload.addEventListener('change', handleImageUpload);
+        document.getElementById('playPause').addEventListener('click', togglePlayPause);
+        document.getElementById('prev').addEventListener('click', showPrevImage);
+        document.getElementById('next').addEventListener('click', showNextImage);
+        intervalInput.addEventListener('change', updateInterval);
+
+        function handleImageUpload(e) {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    images.push(event.target.result);
+                    addThumbnail(event.target.result);
+                    if (images.length === 1) {
+                        showImage(0);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function addThumbnail(src) {
+            const thumbnail = document.createElement('div');
+            thumbnail.className = 'thumbnail';
+            thumbnail.innerHTML = `<img src="${src}" alt="縮圖">`;
+            thumbnail.addEventListener('click', () => {
+                showImage(images.indexOf(src));
+            });
+            thumbnailContainer.appendChild(thumbnail);
+        }
+
+        function showImage(index) {
+            if (images.length === 0) return;
+            currentIndex = index;
+            currentImage.src = images[currentIndex];
+        }
+
+        function showNextImage() {
+            if (images.length === 0) return;
+            currentIndex = (currentIndex + 1) % images.length;
+            showImage(currentIndex);
+        }
+
+        function showPrevImage() {
+            if (images.length === 0) return;
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            showImage(currentIndex);
+        }
+
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                startSlideshow();
+            } else {
+                stopSlideshow();
+            }
+        }
+
+        function startSlideshow() {
+            if (images.length <= 1) return;
+            const interval = intervalInput.value * 1000;
+            slideInterval = setInterval(showNextImage, interval);
+        }
+
+        function stopSlideshow() {
+            clearInterval(slideInterval);
+        }
+
+        function updateInterval() {
+            if (isPlaying) {
+                stopSlideshow();
+                startSlideshow();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code 生成器</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 600px;
+            width: 95%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #qrcode {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+
+        #qrcode img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .error {
+            color: #ff0000;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            input[type="text"],
+            input[type="number"] {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .controls {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+
+            button {
+                padding: 8px;
+                font-size: 12px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+
+            input[type="text"],
+            input[type="number"] {
+                padding: 6px;
+                font-size: 13px;
+            }
+
+            .controls {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            }
+
+            button {
+                padding: 6px;
+                font-size: 11px;
+            }
+
+            #qrcode {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code 生成器</h1>
+        
+        <div class="input-group">
+            <label for="text">輸入文字或網址：</label>
+            <input type="text" id="text" placeholder="請輸入要轉換的內容">
+            <div class="error" id="textError">請輸入內容</div>
+        </div>
+
+        <div class="input-group">
+            <label for="size">QR Code 大小（像素）：</label>
+            <input type="number" id="size" value="200" min="100" max="500">
+            <div class="error" id="sizeError">大小必須在 100 到 500 之間</div>
+        </div>
+
+        <div class="controls">
+            <button onclick="generateQR()">生成 QR Code</button>
+            <button onclick="downloadQR()">下載 QR Code</button>
+        </div>
+
+        <div id="qrcode"></div>
+    </div>
+
+    <script>
+        function generateQR() {
+            const text = document.getElementById('text').value;
+            const size = parseInt(document.getElementById('size').value);
+            const textError = document.getElementById('textError');
+            const sizeError = document.getElementById('sizeError');
+            
+            // 驗證輸入
+            let isValid = true;
+            
+            if (!text) {
+                textError.style.display = 'block';
+                isValid = false;
+            } else {
+                textError.style.display = 'none';
+            }
+            
+            if (size < 100 || size > 500) {
+                sizeError.style.display = 'block';
+                isValid = false;
+            } else {
+                sizeError.style.display = 'none';
+            }
+            
+            if (!isValid) return;
+
+            // 清除舊的 QR Code
+            document.getElementById('qrcode').innerHTML = '';
+
+            // 生成新的 QR Code
+            QRCode.toCanvas(document.createElement('canvas'), text, {
+                width: size,
+                margin: 2,
+            }, function (error, canvas) {
+                if (error) console.error(error);
+                document.getElementById('qrcode').appendChild(canvas);
+            });
+        }
+
+        function downloadQR() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) {
+                alert('請先生成 QR Code');
+                return;
+            }
+
+            // 創建下載連結
+            const link = document.createElement('a');
+            link.download = 'qrcode.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // 監聽 Enter 鍵
+        document.getElementById('text').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQR();
+            }
+        });
+
+        // 自動調整大小輸入範圍
+        document.getElementById('size').addEventListener('input', function(e) {
+            let value = parseInt(e.target.value);
+            if (value < 100) e.target.value = 100;
+            if (value > 500) e.target.value = 500;
+        });
+    </script>
+</body>
+</html>

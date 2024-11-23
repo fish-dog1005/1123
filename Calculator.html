@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>計算機</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .calculator {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            width: 95%;
+        }
+
+        .display {
+            background-color: #f8f8f8;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            text-align: right;
+            font-size: 24px;
+            min-height: 60px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #d0d0d0;
+        }
+
+        .operator {
+            background-color: #ffd700;
+        }
+
+        .equals {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .clear {
+            background-color: #ff4444;
+            color: white;
+        }
+
+        .history {
+            margin-top: 20px;
+            width: 95%;
+            max-width: 400px;
+        }
+
+        .history h2 {
+            margin-bottom: 10px;
+        }
+
+        .history-list {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        @media screen and (max-width: 768px) {
+            .calculator {
+                padding: 15px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 16px;
+            }
+
+            .display {
+                font-size: 20px;
+                min-height: 50px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .calculator {
+                padding: 10px;
+            }
+
+            button {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .display {
+                font-size: 18px;
+                min-height: 45px;
+                padding: 10px;
+            }
+
+            .history h2 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">0</div>
+        <div class="buttons">
+            <button class="clear">C</button>
+            <button class="operator">±</button>
+            <button class="operator">%</button>
+            <button class="operator">÷</button>
+            
+            <button>7</button>
+            <button>8</button>
+            <button>9</button>
+            <button class="operator">×</button>
+            
+            <button>4</button>
+            <button>5</button>
+            <button>6</button>
+            <button class="operator">-</button>
+            
+            <button>1</button>
+            <button>2</button>
+            <button>3</button>
+            <button class="operator">+</button>
+            
+            <button>0</button>
+            <button>.</button>
+            <button class="equals">=</button>
+        </div>
+    </div>
+</body>
+</html>
